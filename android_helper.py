@@ -2,73 +2,52 @@
 from os import system
 from os import path
 import sys
+
 sys.path.append(path.dirname(path.abspath(__file__)))
-import adb_devices, create_branch
+from menu import MenuItem
+import menu, adb_devices, create_branch, utilities
 
-def menu():
-    system("clear")
-    print("=========================================")
-    print("====== Android Development Helper =======")
-    print("=========================================")    
-    if len(devices) > 0:
-        print(f"==== Devices in Use : {devices}")    
-    if len(ticket_number) > 0:
-        print(f"==== Current Ticket : {ticket_number}")    
-    if len(ticket_description) > 0:
-        print(f"==== Current Ticket : {ticket_description}")    
-    if len(devices) > 0 or len(ticket_number) > 0 or len(ticket_description) > 0:
-        print("=========================================")
-    print("==== Menu")
-    print("1. List / Select Device(s)")
-    print("2. Set up git branch")
-    print("3. Run Tests")
-    print("4. Generate APK")
-    print("5. Exit")
-    print("=========================================")
-
-def list_devices():
+def __list_devices():
     return adb_devices.get_adb_devices()
 
-def setup_git_branch():
+def __setup_git_branch():
     return create_branch.create_git_branch()
     
-def run_tests():
+def __run_tests():
     print("Running tests...")
 
-def generate_apk():
+def __generate_apk():
     print("Generating APK...")
+    
+def __open_utilities():
+    utilities.display_menu(devices, ticket_number, ticket_description)
+    
+def display_menu():
+    system("clear")
+
+    menu_items = [
+        MenuItem("List / Select Device(s)", __list_devices),
+        MenuItem("Set up git branch", __setup_git_branch),
+        MenuItem("Run Tests", __run_tests),
+        MenuItem("Generate APK", __generate_apk),
+        MenuItem("Utilities", __open_utilities),
+    ]
+
+    while True:
+        menu.display_menu(menu_items, devices, ticket_number, ticket_description)
+        choice = input("Select an option (1-{} or 'q' to quit): ".format(len(menu_items)))
+        menu.handle_user_choice(choice, menu_items)
 
 def main():
     global devices
     devices = []
-    
     global ticket_number
     ticket_number = ""
     global ticket_description
     ticket_description = ""
-    system("clear")
-    while True:
-        menu()
-        choice = input("Select an option (1-5): ")
-        system("clear")
-        try:
-            choice = int(choice)
-            if choice == 1:
-                devices = list_devices()
-            elif choice == 2:
-                ticket_number, ticket_description = setup_git_branch()
-            elif choice == 3:
-                run_tests()
-            elif choice == 4:
-                generate_apk()
-            elif choice == 5:
-                print("Exiting...")
-                sys.exit(0)
-            else:
-                print("Invalid option, please choose between 1 and 5.")
-        except ValueError:
-            print("Invalid input. Please enter a number between 1 and 5.")
-
+    
+    display_menu()
+    
 if __name__ == "__main__":
     main()
     
